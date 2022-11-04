@@ -1,4 +1,4 @@
-from typing import Any, Callable, NamedTuple
+from typing import Callable, NamedTuple
 
 from scipy.stats import kstest
 
