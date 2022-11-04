@@ -6,7 +6,6 @@ from .base import CTRTtestBase, Statistics
 
 class ImpressionBasedCTRTtest(CTRTtestBase):
     def calc_stats(self, df: pd.DataFrame) -> Statistics:
-        df = df.applymap(lambda x: x.sum())
         nobs = len(df)
         cov_mat = df.cov()
         stats_x = Statistics(df.iloc[:, 0].mean(), np.sqrt(cov_mat.iloc[0, 0]), nobs)

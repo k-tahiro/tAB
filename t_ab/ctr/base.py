@@ -29,10 +29,8 @@ class CTRTtestBase(ABC):
     def __call__(
         self, df_c: pd.DataFrame, df_t: pd.DataFrame, numerator_col: str
     ) -> tuple[tuple[Statistics, Statistics], TtestResult]:  # type: ignore
-        df_c = self.agg_cluster(df_c, numerator_col)
-        df_t = self.agg_cluster(df_t, numerator_col)
-        stats_c = self.calc_stats(df_c)
-        stats_t = self.calc_stats(df_t)
+        stats_c = self.calc_stats(self.agg_cluster(df_c, numerator_col))
+        stats_t = self.calc_stats(self.agg_cluster(df_t, numerator_col))
         statistics, pvalue = ttest_ind_from_stats(*stats_c, *stats_t)
         return (stats_c, stats_t), TtestResult(statistics, pvalue, pvalue < self.alpha)
 
@@ -40,8 +38,7 @@ class CTRTtestBase(ABC):
         return (
             df[[self.cluster_col, self.denominator_col, numerator_col]]
             .groupby(self.cluster_col)
-            .agg(list)
-            .applymap(np.array)
+            .sum()
         )
 
     @abstractmethod
