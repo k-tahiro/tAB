@@ -12,22 +12,23 @@ class AATestResult(NamedTuple):
 class AATest:
     def __init__(
         self,
+        data_loader: Callable[[int], list],
         n_tests: int = 1000,
         method: str = "ks",
         alpha: float = 0.05,
     ) -> None:
+        self.data_loader = data_loader
         self.n_tests = n_tests
         self.method = method
         self.alpha = alpha
 
     def __call__(
         self,
-        data_loader: Callable[[int], list],
         *test_funcs: Callable[[list], float],
     ) -> list[AATestResult]:
         pvalues: list[list[float]] = [[] for _ in test_funcs]
         for i in range(self.n_tests):
-            data = data_loader(i)
+            data = self.data_loader(i)
             for j, test_func in enumerate(test_funcs):
                 pvalues[j].append(test_func(data))
 
