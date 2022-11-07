@@ -1,7 +1,6 @@
 from abc import ABC, abstractmethod
 from typing import NamedTuple
 
-import numpy as np
 import pandas as pd
 from scipy.stats import ttest_ind_from_stats
 
