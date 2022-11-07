@@ -6,9 +6,12 @@ from statsmodels.stats.multitest import multipletests
 
 
 class AATestResult(NamedTuple):
-    pvalues_arr: np.ndarray
-    pvalues: list[float]
-    is_rejected: bool
+    pvalues_for_test: np.ndarray
+    multipletests_result: tuple[np.ndarray, np.ndarray, float, float]
+
+    @property
+    def is_rejected(self) -> bool:
+        return bool(self.multipletests_result[0].any())
 
 
 class AATest:
@@ -36,8 +39,8 @@ class AATest:
     def __call__(
         self, *test_funcs: Callable[[list], list[float]]
     ) -> list[AATestResult]:
-        pvalues_list = self.run_tests(*test_funcs)
-        results = [self.test_pvalues(pvalues) for pvalues in pvalues_list]
+        pvalues_for_test = self.run_tests(*test_funcs)
+        results = [self.test_pvalues(pvalues) for pvalues in pvalues_for_test]
         return results
 
     def run_tests(self, *test_funcs: Callable[[list], list[float]]) -> np.ndarray:
@@ -48,10 +51,9 @@ class AATest:
                 pvalues_list[j].append(test_func(data))
         return np.array(pvalues_list).transpose(0, 2, 1)
 
-    def test_pvalues(self, pvalues_arr: np.ndarray) -> AATestResult:
-        pvalues = [kstest(pvalues, "uniform").pvalue for pvalues in pvalues_arr]
+    def test_pvalues(self, pvalues_for_test: np.ndarray) -> AATestResult:
+        pvalues = [kstest(pvalues, "uniform").pvalue for pvalues in pvalues_for_test]
         return AATestResult(
-            pvalues_arr,
-            pvalues,
+            pvalues_for_test,
             multipletests(pvalues, alpha=self.alpha, method=self.mcp_correction_method),
         )
