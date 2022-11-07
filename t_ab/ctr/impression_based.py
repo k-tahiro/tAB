@@ -8,23 +8,24 @@ class ImpressionBasedCTRTtest(CTRTtestBase):
     def calc_stats(self, df: pd.DataFrame) -> Statistics:
         nobs = len(df)
         cov_mat = df.cov()
-        stats_x = Statistics(df.iloc[:, 0].mean(), np.sqrt(cov_mat.iloc[0, 0]), nobs)
-        stats_y = Statistics(df.iloc[:, 1].mean(), np.sqrt(cov_mat.iloc[1, 1]), nobs)
-        cov_xy = cov_mat.iloc[0, 1]
+        stats_s = Statistics(df.iloc[:, 1].mean(), np.sqrt(cov_mat.iloc[1, 1]), nobs)
+        stats_n = Statistics(df.iloc[:, 0].mean(), np.sqrt(cov_mat.iloc[0, 0]), nobs)
+        cov_sn = cov_mat.iloc[0, 1]
         return Statistics(
-            self.mean_delta(stats_x, stats_y, cov_xy),
-            np.sqrt(self.var_delta(stats_x, stats_y, cov_xy)),
+            stats_s.mean / stats_n.mean,
+            np.sqrt(self.var_delta(stats_s, stats_n, cov_sn)),
             nobs,
         )
 
     @staticmethod
-    def mean_delta(stats_x: Statistics, stats_y: Statistics, cov_xy: float) -> float:
-        return stats_y.mean / stats_x.mean
-
-    @staticmethod
-    def var_delta(stats_x: Statistics, stats_y: Statistics, cov_xy: float) -> float:
+    def var_delta(stats_s: Statistics, stats_n: Statistics, cov_sn: float) -> float:
+        mean_ratio = stats_s.mean / stats_n.mean
         return (
-            (stats_y.std**2)
-            - 2 * stats_y.mean / stats_x.mean * cov_xy
-            + (stats_y.mean**2) / (stats_x.mean**2) * (stats_x.std**2)
-        ) / (stats_x.mean**2)
+            (
+                stats_s.std**2
+                - 2 * mean_ratio * cov_sn
+                + (mean_ratio * stats_n.std) ** 2
+            )
+            / (stats_n.mean**2)
+            # / stats_s.nobs
+        )
