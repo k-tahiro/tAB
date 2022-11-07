@@ -28,7 +28,7 @@ class CTRTtestBase(ABC):
 
     def __call__(
         self, df_c: pd.DataFrame, df_t: pd.DataFrame, numerator_col: str
-    ) -> tuple[tuple[Statistics, Statistics], TtestResult]:  # type: ignore
+    ) -> tuple[tuple[Statistics, Statistics], TtestResult]:
         stats_c = self.calc_stats(self.agg_cluster(df_c, numerator_col))
         stats_t = self.calc_stats(self.agg_cluster(df_t, numerator_col))
         statistics, pvalue = ttest_ind_from_stats(*stats_c, *stats_t)
