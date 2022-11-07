@@ -2,8 +2,7 @@ from typing import Callable, NamedTuple
 
 import numpy as np
 from scipy.stats import kstest
-
-from t_ab.multiple_comparison import bonferroni
+from statsmodels.stats.multitest import multipletests
 
 
 class AATestResult(NamedTuple):
@@ -19,10 +18,9 @@ class AATest:
         n_tests: int = 1000,
         alpha: float = 0.05,
         uniform_test_method: str = "ks",
-        mcp_correction_method: str = "bonferroni",
+        mcp_correction_method: str = "hs",
     ) -> None:
         assert uniform_test_method in {"ks"}
-        assert mcp_correction_method in {"bonferroni"}
         self.data_loader = data_loader
         self.n_tests = n_tests
         self.alpha = alpha
@@ -33,12 +31,6 @@ class AATest:
     def uniform_test(self) -> Callable:
         if self.uniform_test_method == "ks":
             return kstest
-        raise ValueError
-
-    @property
-    def mcp_correction(self) -> Callable:
-        if self.mcp_correction_method == "bonferroni":
-            return bonferroni
         raise ValueError
 
     def __call__(
@@ -59,5 +51,7 @@ class AATest:
     def test_pvalues(self, pvalues_arr: np.ndarray) -> AATestResult:
         pvalues = [kstest(pvalues, "uniform").pvalue for pvalues in pvalues_arr]
         return AATestResult(
-            pvalues_arr, pvalues, self.mcp_correction(pvalues, self.alpha)
+            pvalues_arr,
+            pvalues,
+            multipletests(pvalues, alpha=self.alpha, method=self.mcp_correction_method),
         )
