@@ -41,14 +41,14 @@ class AATest:
     def run_tests(
         self, *test_funcs: Callable[[list], list[float]]
     ) -> Generator[list[list[float]], None, None]:
-        pvalues_list: list[list[list[float]]] = [[] for _ in test_funcs]
-        for i in range(self.n_tests):
-            data = self.data_loader(i)
-            for j, test_func in enumerate(test_funcs):
-                pvalues_list[j].append(test_func(data))
-
-        for pvalues in pvalues_list:
-            yield np.array(pvalues).T.tolist()
+        pvalues_arr = np.array(
+            [
+                [test_func(data) for test_func in test_funcs]
+                for data in map(self.data_loader, range(self.n_tests))
+            ]
+        ).transpose(1, 2, 0)
+        for pvalues in pvalues_arr:
+            yield pvalues.tolist()
 
     def test_pvalues(self, pvalues_for_aa_test: list[list[float]]) -> AATestResult:
         pvalues = [self.uniform_test(pvalues) for pvalues in pvalues_for_aa_test]
