@@ -1,11 +1,15 @@
 [tool.poetry]
 name = "t-ab"
-version = "0.1.0"
+version = "0.0.0"  # using poetry-dynamic-versioning
 description = "tool for AB testing"
 authors = ["Keisuke Hirota <tahiro.k.ad@gmail.com>"]
 license = "MIT"
 readme = "README.md"
 packages = [{include = "t_ab"}]
+
+[tool.poetry-dynamic-versioning]
+enable = true
+style = "pep440"
 
 [tool.poetry.dependencies]
 python = "^3.11"
