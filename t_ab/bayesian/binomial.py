@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from typing import Self
 
 import pandas as pd
 from scipy.stats import beta
@@ -23,7 +22,7 @@ class BinomialData:
         neg = self.tot - self.pos
         return beta(self.prior_pos + self.pos, self.prior_neg + neg)
 
-    def update_obs(self, tot: int, pos: int) -> Self:
+    def update_obs(self, tot: int, pos: int) -> "BinomialData":
         self.tot += tot
         self.pos += pos
         return self
@@ -34,11 +33,11 @@ class BinomialTest:
         self.data = {bd.name: bd for bd in data}
         self.df: pd.DataFrame = None
 
-    def update_obs(self, name: str, tot: int, pos: int) -> Self:
+    def update_obs(self, name: str, tot: int, pos: int) -> "BinomialTest":
         self.data[name].update_obs(tot, pos)
         return self
 
-    def sample(self, n_samples: int = 100000) -> Self:
+    def sample(self, n_samples: int = 100000) -> "BinomialTest":
         self.df = pd.DataFrame(
             {name: bd.posterior.rvs(n_samples) for name, bd in self.data.items()}
         )
