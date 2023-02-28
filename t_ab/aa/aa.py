@@ -21,7 +21,7 @@ class AATestResult(NamedTuple):
 class AATest:
     def __init__(
         self,
-        *test_funcs: Callable[[pd.DataFrame, pd.DataFrame], CTRTestResult],
+        test_funcs: dict[str, Callable[[pd.DataFrame, pd.DataFrame], CTRTestResult]],
         alpha: float = 0.05,
         uniform_test_method: str = "ks",
         mcp_correction_method: str = "hs",
@@ -34,25 +34,29 @@ class AATest:
 
     def __call__(
         self, dfs_loader: Generator[list[pd.DataFrame], None, None]
-    ) -> list[AATestResult]:
-        return [
-            self.test_pvalues(pvalues_for_aa_test)
-            for pvalues_for_aa_test in self.run_tests(dfs_loader)
-        ]
+    ) -> dict[str, AATestResult]:
+        pvalues_for_aa_test = self.run_tests(dfs_loader)
+        return {
+            test_name: self.test_pvalues(pvalues)
+            for test_name, pvalues in pvalues_for_aa_test.items()
+        }
 
     def run_tests(
         self, dfs_loader: Generator[list[pd.DataFrame], None, None]
-    ) -> Generator[list[list[float]], None, None]:
-        pvalues_arr = np.array(
-            [
-                [self._run_test(test_func, dfs) for test_func in self.test_funcs]
-                for dfs in dfs_loader
-            ]
-        )
-        pvalues_arr = pvalues_arr.transpose(1, 2, 0)
-
-        for pvalues in pvalues_arr:
-            yield pvalues.tolist()
+    ) -> dict[str, list[list[float]]]:
+        pvalues = [
+            {
+                test_name: self._run_test(test_func, dfs)
+                for test_name, test_func in self.test_funcs.items()
+            }
+            for dfs in dfs_loader
+        ]
+        return {
+            test_name: np.array(
+                [_pvalues[test_name] for _pvalues in pvalues]
+            ).T.tolist()
+            for test_name in self.test_funcs
+        }
 
     def _run_test(
         self,
