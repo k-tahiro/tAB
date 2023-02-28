@@ -45,20 +45,28 @@ class AATest:
     ) -> Generator[list[list[float]], None, None]:
         pvalues_arr = np.array(
             [
-                [
-                    [
-                        test_func(df1, df2).ttest_result.pvalue
-                        for test_func in self.test_funcs
-                    ]
-                    for df1, df2 in combinations(dfs, 2)
-                ]
+                [self._run_test(test_func, dfs) for test_func in self.test_funcs]
                 for dfs in dfs_loader
             ]
         )
-        pvalues_arr = pvalues_arr.transpose(2, 1, 0)
+        pvalues_arr = pvalues_arr.transpose(1, 2, 0)
 
         for pvalues in pvalues_arr:
             yield pvalues.tolist()
+
+    def _run_test(
+        self,
+        test_func: Callable[[pd.DataFrame, pd.DataFrame], CTRTestResult],
+        dfs: list[pd.DataFrame],
+    ) -> list[float]:
+        """Run test ensuring the order of combination."""
+        pvalues_for_each_combs = {
+            f"({i}, {j})": test_func(df_i, df_j).ttest_result.pvalue
+            for (i, df_i), (j, df_j) in combinations(zip(range(len(dfs)), dfs), 2)
+        }
+        return [
+            v for _, v in sorted(pvalues_for_each_combs.items(), key=lambda x: x[0])
+        ]
 
     def test_pvalues(self, pvalues_for_aa_test: list[list[float]]) -> AATestResult:
         pvalues = [self.uniform_test(pvalues) for pvalues in pvalues_for_aa_test]
