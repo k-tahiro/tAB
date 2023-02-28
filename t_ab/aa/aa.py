@@ -1,8 +1,12 @@
+from itertools import combinations
 from typing import Callable, Generator, NamedTuple
 
 import numpy as np
+import pandas as pd
 from scipy.stats import kstest
 from statsmodels.stats.multitest import multipletests
+
+from ..ctr import CTRTestResult
 
 
 class AATestResult(NamedTuple):
@@ -17,36 +21,42 @@ class AATestResult(NamedTuple):
 class AATest:
     def __init__(
         self,
-        data_loader: Callable[[int], list],
-        n_tests: int = 1000,
+        *test_funcs: Callable[[pd.DataFrame, pd.DataFrame], CTRTestResult],
         alpha: float = 0.05,
         uniform_test_method: str = "ks",
         mcp_correction_method: str = "hs",
     ) -> None:
         assert uniform_test_method in {"ks"}
-        self.data_loader = data_loader
-        self.n_tests = n_tests
+        self.test_funcs = test_funcs
         self.alpha = alpha
         self.uniform_test_method = uniform_test_method
         self.mcp_correction_method = mcp_correction_method
 
     def __call__(
-        self, *test_funcs: Callable[[list], list[float]]
+        self, dfs_loader: Generator[list[pd.DataFrame], None, None]
     ) -> list[AATestResult]:
         return [
             self.test_pvalues(pvalues_for_aa_test)
-            for pvalues_for_aa_test in self.run_tests(*test_funcs)
+            for pvalues_for_aa_test in self.run_tests(dfs_loader)
         ]
 
     def run_tests(
-        self, *test_funcs: Callable[[list], list[float]]
+        self, dfs_loader: Generator[list[pd.DataFrame], None, None]
     ) -> Generator[list[list[float]], None, None]:
         pvalues_arr = np.array(
             [
-                [test_func(data) for test_func in test_funcs]
-                for data in map(self.data_loader, range(self.n_tests))
+                [
+                    [
+                        test_func(df1, df2).ttest_result.pvalue
+                        for test_func in self.test_funcs
+                    ]
+                    for df1, df2 in combinations(dfs, 2)
+                ]
+                for dfs in dfs_loader
             ]
-        ).transpose(1, 2, 0)
+        )
+        pvalues_arr = pvalues_arr.transpose(2, 1, 0)
+
         for pvalues in pvalues_arr:
             yield pvalues.tolist()
 
