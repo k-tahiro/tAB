@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import NamedTuple
+from typing import NamedTuple, Optional
 
 import pandas as pd
 from scipy.stats import ttest_ind_from_stats
@@ -30,6 +30,7 @@ class CTRTtestBase(ABC):
         numerator_col: str,
         equal_var: bool = True,
         alpha: float = 0.05,
+        metrics_name: Optional[str] = None,
     ) -> None:
         """CTR testing base class.
 
@@ -45,6 +46,11 @@ class CTRTtestBase(ABC):
         self.numerator_col = numerator_col
         self.equal_var = equal_var
         self.alpha = alpha
+        self._metrics_name = metrics_name
+
+    @property
+    def metrics_name(self) -> str:
+        return self._metrics_name if self._metrics_name else f"{self.numerator_col} / {self.denominator_col}"
 
     def __call__(self, df_c: pd.DataFrame, df_t: pd.DataFrame) -> CTRTestResult:
         """Run T-test for two independent groups.
