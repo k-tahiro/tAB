@@ -49,8 +49,12 @@ class CTRTtestBase(ABC):
         self._metrics_name = metrics_name
 
     @property
+    def default_metrics_name(self) -> str:
+        return f"{self.numerator_col} / {self.denominator_col}"
+
+    @property
     def metrics_name(self) -> str:
-        return self._metrics_name if self._metrics_name else f"{self.numerator_col} / {self.denominator_col}"
+        return self._metrics_name if self._metrics_name else self.default_metrics_name
 
     def __call__(self, df_c: pd.DataFrame, df_t: pd.DataFrame) -> CTRTestResult:
         """Run T-test for two independent groups.

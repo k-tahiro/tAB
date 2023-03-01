@@ -6,7 +6,7 @@ import pandas as pd
 from scipy.stats import kstest
 from statsmodels.stats.multitest import multipletests
 
-from ..ctr import CTRTestResult
+from ..ctr.base import CTRTestResult, CTRTtestBase
 
 
 class AATestResult(NamedTuple):
@@ -21,7 +21,7 @@ class AATestResult(NamedTuple):
 class AATest:
     def __init__(
         self,
-        test_funcs: dict[str, Callable[[pd.DataFrame, pd.DataFrame], CTRTestResult]],
+        *test_funcs: CTRTtestBase,
         alpha: float = 0.05,
         uniform_test_method: str = "ks",
         mcp_correction_method: str = "hs",
@@ -46,16 +46,16 @@ class AATest:
     ) -> dict[str, list[list[float]]]:
         pvalues = [
             {
-                test_name: self._run_test(test_func, dfs)
-                for test_name, test_func in self.test_funcs.items()
+                test_func.metrics_name: self._run_test(test_func, dfs)
+                for test_func in self.test_funcs
             }
             for dfs in dfs_loader
         ]
         return {
-            test_name: np.array(
-                [_pvalues[test_name] for _pvalues in pvalues]
+            test_func.metrics_name: np.array(
+                [_pvalues[test_func.metrics_name] for _pvalues in pvalues]
             ).T.tolist()
-            for test_name in self.test_funcs
+            for test_func in self.test_funcs
         }
 
     def _run_test(

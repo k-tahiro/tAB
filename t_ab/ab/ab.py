@@ -3,22 +3,18 @@ from typing import Callable
 
 import pandas as pd
 
-from ..ctr import CTRTestResult
+from ..ctr.base import CTRTestResult, CTRTtestBase
 
 
 class ABTest:
-    def __init__(
-        self,
-        test_funcs: dict[str, Callable[[pd.DataFrame, pd.DataFrame], CTRTestResult]],
-        alpha: float = 0.05,
-    ) -> None:
+    def __init__(self, *test_funcs: CTRTtestBase, alpha: float = 0.05) -> None:
         self.test_funcs = test_funcs
         self.alpha = alpha
 
     def __call__(self, dfs: list[pd.DataFrame]) -> dict[str, dict[str, CTRTestResult]]:
         return {
-            test_name: self.run_test(test_func, dfs)
-            for test_name, test_func in self.test_funcs.items()
+            test_func.metrics_name: self.run_test(test_func, dfs)
+            for test_func in self.test_funcs
         }
 
     def run_test(

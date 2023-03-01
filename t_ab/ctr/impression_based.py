@@ -5,6 +5,10 @@ from .base import CTRTtestBase, Statistics
 
 
 class ImpressionBasedCTRTtest(CTRTtestBase):
+    @property
+    def default_metrics_name(self) -> str:
+        return f"{self.numerator_col} / {self.denominator_col} (Impression-Based)"
+
     def calc_stats(self, df: pd.DataFrame) -> Statistics:
         nobs = len(df)
         cov_mat = df.cov()
