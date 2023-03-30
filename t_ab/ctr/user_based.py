@@ -8,6 +8,9 @@ class UserBasedCTRTtest(CTRTtestBase):
     def default_metrics_name(self) -> str:
         return f"{self.numerator_col} / {self.denominator_col} (User-Based)"
 
+    def calc_metrics(self, df: pd.DataFrame) -> pd.Series:
+        return df[self.numerator_col] / df[self.denominator_col]
+
     def calc_stats(self, df: pd.DataFrame) -> Statistics:
-        metrics = df[self.numerator_col] / df[self.denominator_col]
+        metrics = self.calc_metrics(df)
         return Statistics(metrics.mean(), metrics.std(), len(metrics))
