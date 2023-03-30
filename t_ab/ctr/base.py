@@ -40,6 +40,7 @@ class CTRTtestBase(ABC):
             numerator_col (str): The numerator column name in dataframes. Numerator is typically the number of actions like `click`.
             equal_var (bool, optional): Whether to assume equal population variances in T-test or not. Defaults to True.
             alpha (float, optional): Confidence level for T-test. Defaults to 0.05.
+            metrics_name (Optional[str], optional): metrics name you want.
         """
         self.cluster_col = cluster_col
         self.denominator_col = denominator_col

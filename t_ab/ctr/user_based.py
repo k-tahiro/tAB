@@ -9,5 +9,5 @@ class UserBasedCTRTtest(CTRTtestBase):
         return f"{self.numerator_col} / {self.denominator_col} (User-Based)"
 
     def calc_stats(self, df: pd.DataFrame) -> Statistics:
-        metrics = df.iloc[:, 1] / df.iloc[:, 0]
+        metrics = df[self.numerator_col] / df[self.denominator_col]
         return Statistics(metrics.mean(), metrics.std(), len(metrics))
