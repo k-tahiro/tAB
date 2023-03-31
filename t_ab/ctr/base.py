@@ -31,7 +31,6 @@ class CTRTtestBase(ABC):
         equal_var: bool = True,
         alpha: float = 0.05,
         metrics_name: Optional[str] = None,
-        outlier_percentile: Optional[float] = None,
     ) -> None:
         """CTR testing base class.
 
@@ -49,7 +48,6 @@ class CTRTtestBase(ABC):
         self.equal_var = equal_var
         self.alpha = alpha
         self._metrics_name = metrics_name
-        self.outlier_percentile = outlier_percentile
 
     @property
     def default_metrics_name(self) -> str:
@@ -92,17 +90,6 @@ class CTRTtestBase(ABC):
             .groupby(self.cluster_col)
             .sum()
         )
-
-    def ignore_outliers(self, df: pd.DataFrame) -> pd.DataFrame:
-        if self.outlier_percentile is None:
-            return df
-        metrics = self.calc_metrics(df)
-        threshold = metrics.quantile(self.outlier_percentile)
-        return df[metrics < threshold]
-
-    @abstractmethod
-    def calc_metrics(self, df: pd.DataFrame) -> pd.Series:
-        raise NotImplementedError
 
     @abstractmethod
     def calc_stats(self, df: pd.DataFrame) -> Statistics:
