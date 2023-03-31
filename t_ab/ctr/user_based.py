@@ -22,8 +22,11 @@ class UserBasedCTRTtest(CTRTtestBase):
             lower_threshold = q1 - 1.5 * iqr
             upper_threshold = q3 + 1.5 * iqr
             return df[
-                df.index.isin(df_cluster[metrics >= lower_threshold].index)
-                & df.index.isin(df_cluster[metrics <= upper_threshold].index)
+                df[self.cluster_col].isin(
+                    df_cluster[
+                        (metrics >= lower_threshold) & (metrics <= upper_threshold)
+                    ].index
+                )
             ]
         else:
             threshold = metrics.quantile(outlier_percentile)
