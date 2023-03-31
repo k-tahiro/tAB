@@ -16,9 +16,7 @@ class UserBasedCTRTtest(CTRTtestBase):
         df_cluster = self.agg_cluster(df)
         metrics = self.calc_metrics(df_cluster)
         threshold = metrics.quantile(outlier_percentile)
-        return df[
-            df[self.cluster_col].isin(df_cluster[metrics < threshold][self.cluster_col])
-        ]
+        return df[df.index.isin(df_cluster[metrics < threshold].index)]
 
     def calc_metrics(self, df: pd.DataFrame) -> pd.Series:
         return df[self.numerator_col] / df[self.denominator_col]
