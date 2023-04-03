@@ -7,9 +7,7 @@ from .base import CTRTtestBase
 
 
 class UserBasedCTRTtest(CTRTtestBase):
-    @property
-    def default_metrics_name(self) -> str:
-        return f"{self.numerator_col} / {self.denominator_col} (User-Based)"
+    METRICS_BASE = "User-Based"
 
     def ignore_outliers(
         self, df: pd.DataFrame, outlier_percentile: Optional[float] = None

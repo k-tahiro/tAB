@@ -8,6 +8,8 @@ from ..common import Statistics, TestResult, TwoSamplesTestResult
 
 
 class CTRTtestBase(ABC):
+    METRICS_BASE: str
+
     def __init__(
         self,
         cluster_col: str,
