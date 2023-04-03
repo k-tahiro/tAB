@@ -1,25 +1,10 @@
 from abc import ABC, abstractmethod
-from typing import NamedTuple, Optional
+from typing import Optional
 
 import pandas as pd
 from scipy.stats import ttest_ind_from_stats
 
-
-class Statistics(NamedTuple):
-    mean: float
-    std: float
-    nobs: int
-
-
-class TtestResult(NamedTuple):
-    statistic: float
-    pvalue: float
-    is_rejected: bool
-
-
-class CTRTestResult(NamedTuple):
-    statistics: tuple[Statistics, Statistics]
-    ttest_result: TtestResult
+from ..common import Statistics, TestResult, TwoSamplesTestResult
 
 
 class CTRTtestBase(ABC):
@@ -57,7 +42,7 @@ class CTRTtestBase(ABC):
     def metrics_name(self) -> str:
         return self._metrics_name if self._metrics_name else self.default_metrics_name
 
-    def __call__(self, df_c: pd.DataFrame, df_t: pd.DataFrame) -> CTRTestResult:
+    def __call__(self, df_c: pd.DataFrame, df_t: pd.DataFrame) -> TwoSamplesTestResult:
         """Run T-test for two independent groups.
 
         Args:
@@ -72,8 +57,8 @@ class CTRTtestBase(ABC):
         statistic, pvalue = ttest_ind_from_stats(
             *stats_c, *stats_t, equal_var=self.equal_var
         )
-        return CTRTestResult(
-            (stats_c, stats_t), TtestResult(statistic, pvalue, pvalue < self.alpha)
+        return TwoSamplesTestResult(
+            (stats_c, stats_t), TestResult(statistic, pvalue, pvalue < self.alpha)
         )
 
     def agg_cluster(self, df: pd.DataFrame) -> pd.DataFrame:

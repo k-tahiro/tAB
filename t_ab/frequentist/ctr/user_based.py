@@ -2,7 +2,8 @@ from typing import Optional
 
 import pandas as pd
 
-from .base import CTRTtestBase, Statistics
+from ..common import Statistics
+from .base import CTRTtestBase
 
 
 class UserBasedCTRTtest(CTRTtestBase):
