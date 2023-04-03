@@ -1,10 +1,25 @@
 from abc import ABC, abstractmethod
-from typing import Optional
+from typing import NamedTuple, Optional
 
 import pandas as pd
 from scipy.stats import ttest_ind_from_stats
 
-from ..common import Statistics, TestResult, TwoSamplesTestResult
+
+class Statistics(NamedTuple):
+    mean: float
+    std: float
+    nobs: int
+
+
+class TestResult(NamedTuple):
+    statistic: float
+    pvalue: float
+    is_rejected: bool
+
+
+class TwoSamplesTestResult(NamedTuple):
+    statistics: tuple[Statistics, Statistics]
+    test_result: TestResult
 
 
 class CTRTtestBase(ABC):

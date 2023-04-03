@@ -1,8 +1,7 @@
 import numpy as np
 import pandas as pd
 
-from ..common import Statistics
-from .base import CTRTtestBase
+from .base import CTRTtestBase, Statistics
 
 
 class ImpressionBasedCTRTtest(CTRTtestBase):
