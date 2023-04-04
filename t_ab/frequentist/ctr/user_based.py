@@ -10,17 +10,24 @@ class UserBasedCTRTtest(CTRTtestBase):
     def ignore_outliers(
         self,
         df: pd.DataFrame,
+        minimum_sample_size: int = 100,
         outlier_percentile: float = 0.99,
         estimate_dist: bool = True,
     ) -> pd.DataFrame:
         df_cluster = self.agg_cluster(df)
+        sample_filter = df_cluster[self.denominator_col] >= minimum_sample_size
+
         metrics = self.calc_metrics(df_cluster)
         if estimate_dist:
             a, b, _, _ = beta.fit(metrics, floc=0, fscale=1, method="MM")
             threshold = beta.ppf(outlier_percentile, a, b)
         else:
             threshold = metrics.quantile(outlier_percentile)
-        return df[df[self.cluster_col].isin(df_cluster[metrics <= threshold].index)]
+        metrics_filter = metrics <= threshold
+
+        return df[
+            df[self.cluster_col].isin(df_cluster[sample_filter & metrics_filter].index)
+        ]
 
     def calc_metrics(self, df: pd.DataFrame) -> pd.Series:
         return df[self.numerator_col] / df[self.denominator_col]
