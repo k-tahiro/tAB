@@ -15,7 +15,7 @@ class UserBasedCTRTtest(CTRTtestBase):
         estimate_dist: bool = True,
     ) -> pd.DataFrame:
         df_cluster = self.agg_cluster(df)
-        sample_filter = df_cluster[self.denominator_col] >= minimum_sample_size
+        df_cluster = df_cluster[df_cluster[self.denominator_col] >= minimum_sample_size]
 
         metrics = self.calc_metrics(df_cluster)
         if estimate_dist:
@@ -23,11 +23,8 @@ class UserBasedCTRTtest(CTRTtestBase):
             threshold = beta.ppf(outlier_percentile, a, b)
         else:
             threshold = metrics.quantile(outlier_percentile)
-        metrics_filter = metrics <= threshold
 
-        return df[
-            df[self.cluster_col].isin(df_cluster[sample_filter & metrics_filter].index)
-        ]
+        return df[df[self.cluster_col].isin(df_cluster[metrics <= threshold].index)]
 
     def calc_metrics(self, df: pd.DataFrame) -> pd.Series:
         return df[self.numerator_col] / df[self.denominator_col]
